@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聚類分析與可視化 by c55Math4833</title>
+    <title data-i18n="title">ClusterViz</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/3.0.1/plotly.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        #langSelect { width: 120px; padding: 4px 8px; font-size: 14px; }
         .container { display: flex; flex-wrap: wrap; gap: 20px; }
         .left-panel { flex: 1; min-width: 300px; }
         .right-panel { flex: 2; min-width: 600px; }
@@ -32,48 +34,86 @@
         #progressText { margin-top: 10px; font-weight: bold; }
         #progressBarContainer { width: 200px; height: 10px; background: #ddd; border-radius: 5px; margin: 10px auto; }
         #progressBar { width: 0%; height: 100%; background: #3498db; border-radius: 5px; }
+        footer { text-align: center; padding: 10px 0; margin-top: 20px; font-size: 14px; color: #666; }
     </style>
 </head>
 <body>
-    <h1>聚類分析與可視化 by c55Math4833</h1>
+    <div class="header">
+        <h1 data-i18n="title">ClusterViz</h1>
+        <select id="langSelect">
+            <option value="en">English</option>
+            <option value="zh-TW">繁體中文</option>
+            <option value="zh-CN">简体中文</option>
+        </select>
+    </div>
+
     <div class="container">
         <div class="left-panel">
             <div class="box">
-                <h3>文件上傳區</h3>
+                <h3 data-i18n="upload_header">文件上傳區</h3>
                 <div class="form-group">
-                    <label for="fileInput">選擇 CSV 文件 (UTF-8 或 Big5 編碼)</label>
+                    <label for="fileInput" data-i18n="choose_file">選擇 CSV 文件 (UTF-8 或 Big5 編碼)</label>
                     <input type="file" id="fileInput" accept=".csv">
                 </div>
-                <button id="nextButton">下一步</button>
+                <button id="nextButton" data-i18n="next_btn">下一步</button>
                 <div id="uploadMessage" class="form-group"></div>
             </div>
             <div class="box">
-                <h3>參數設定區</h3>
+                <h3 data-i18n="params_header">參數設定區</h3>
                 <div class="form-group">
-                    <label for="algorithmDropdown">選擇聚類算法</label>
+                    <label for="algorithmDropdown" data-i18n="choose_algo">選擇聚類算法</label>
                     <select id="algorithmDropdown" disabled>
-                        <option value="kmeans">KMeans (K 平均算法)</option>
-                        <option value="dbscan">DBSCAN</option>
-                        <option value="hierarchical">Hierarchical (層次聚類法)</option>
-                        <option value="gmm">Gaussian Mixture (高斯混合模型)</option>
+                        <option value="kmeans" data-i18n="opt_kmeans">KMeans</option>
+                        <option value="dbscan" data-i18n="opt_dbscan">DBSCAN</option>
+                        <option value="hierarchical" data-i18n="opt_hierarchical">Hierarchical</option>
+                        <option value="gmm" data-i18n="opt_gmm">Gaussian Mixture</option>
                     </select>
                 </div>
-                <div class="form-group"><label for="idDropdown">選擇 ID 欄位</label><select id="idDropdown" disabled></select></div>
-                <div class="form-group"><label for="x1Dropdown">選擇 X 欄位 (數值, 必選)</label><select id="x1Dropdown" disabled></select></div>
-                <div class="form-group"><label for="x2Dropdown">選擇 Y 欄位 (數值, 必選)</label><select id="x2Dropdown" disabled></select></div>
-                <div class="form-group"><label for="x3Dropdown">選擇 Z 欄位 (數值, 可選)</label><select id="x3Dropdown" disabled><option value="none">無 (2D 可視化)</option></select></div>
-                <div class="form-group" id="clusterNumGroup"><label for="clusterNumInput">聚類組數 (0 為預設)</label><input type="number" id="clusterNumInput" value="0" min="0" step="1" disabled></div>
-                <div class="form-group"><label for="preprocessingDropdown">數據預處理方式</label><select id="preprocessingDropdown" disabled><option value="none" selected>不經處理 (None)</option><option value="standardize">標準化 (Standardize)</option></select></div>
-                <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="checkbox" id="showCentersCheckbox" checked> 顯示聚類中心</label>
-                    <label class="checkbox-label" id="boundaryCheckboxGroup"><input type="checkbox" id="showBoundaryCheckbox" checked> 顯示聚類邊界</label>
+                <div class="form-group">
+                    <label for="idDropdown" data-i18n="choose_id">選擇 ID 欄位</label>
+                    <select id="idDropdown" disabled></select>
                 </div>
-                <button id="calculateButton" disabled>開始計算</button>
+                <div class="form-group">
+                    <label for="x1Dropdown" data-i18n="choose_x">選擇 X 欄位 (數值, 必選)</label>
+                    <select id="x1Dropdown" disabled></select>
+                </div>
+                <div class="form-group">
+                    <label for="x2Dropdown" data-i18n="choose_y">選擇 Y 欄位 (數值, 必選)</label>
+                    <select id="x2Dropdown" disabled></select>
+                </div>
+                <div class="form-group">
+                    <label for="x3Dropdown" data-i18n="choose_z">選擇 Z 欄位 (數值, 可選)</label>
+                    <select id="x3Dropdown" disabled>
+                        <option value="none" data-i18n="opt_none">無 (2D 可視化)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="clusterNumGroup">
+                    <label for="clusterNumInput" data-i18n="cluster_num">聚類組數 (0 為預設)</label>
+                    <input type="number" id="clusterNumInput" value="0" min="0" step="1" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="preprocessingDropdown" data-i18n="preprocess">數據預處理方式</label>
+                    <select id="preprocessingDropdown" disabled>
+                        <option value="none" data-i18n="opt_none">不經處理 (None)</option>
+                        <option value="standardize" data-i18n="opt_standardize">標準化 (Standardize)</option>
+                    </select>
+                </div>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showCentersCheckbox" checked>
+                        <span data-i18n="show_centers">顯示聚類中心</span>
+                    </label>
+                    <label class="checkbox-label" id="boundaryCheckboxGroup">
+                        <input type="checkbox" id="showBoundaryCheckbox" checked>
+                        <span data-i18n="show_boundaries">顯示聚類邊界</span>
+                    </label>
+                </div>
+                <button id="calculateButton" disabled data-i18n="start_btn">開始計算</button>
             </div>
         </div>
         <div class="right-panel">
             <div class="box">
-                <h3>聚類結果可視化</h3>
+                <h3 data-i18n="result_header">聚類結果可視化</h3>
                 <div id="plotArea"></div>
                 <div id="resultInfo" class="stats-box"></div>
             </div>
@@ -86,34 +126,192 @@
             <div id="progressBarContainer"><div id="progressBar"></div></div>
         </div>
     </div>
+    <footer>© 2025 <a href="https://blog.c55math4833.com/">c55Math4833</a></footer>
     <script>
+    // 多語字串表
+    const i18n = {
+        "zh-TW": {
+            title: "ClusterViz",
+            upload_header: "文件選擇區",
+            choose_file: "選擇 CSV 文件 (UTF-8 或 Big5 編碼)",
+            next_btn: "下一步",
+            params_header: "參數設定區",
+            choose_algo: "選擇聚類算法",
+            opt_kmeans: "KMeans (K 平均算法)",
+            opt_dbscan: "DBSCAN",
+            opt_hierarchical: "Hierarchical (層次聚類法)",
+            opt_gmm: "Gaussian Mixture (高斯混合模型)",
+            choose_id: "選擇 ID 欄位",
+            choose_x: "選擇 X 欄位 (數值, 必選)",
+            choose_y: "選擇 Y 欄位 (數值, 必選)",
+            choose_z: "選擇 Z 欄位 (數值, 可選)",
+            opt_none: "無 (2D 可視化)",
+            cluster_num: "聚類組數 (0 為預設)",
+            preprocess: "數據預處理方式",
+            opt_standardize: "標準化 (Standardize)",
+            show_centers: "顯示聚類中心",
+            show_boundaries: "顯示聚類邊界",
+            start_btn: "開始計算",
+            result_header: "聚類結果可視化",
+            error_select_file: "請選擇文件",
+            error_csv_file: "請選擇 CSV 文件",
+            error_parse: "CSV 解析錯誤: ",
+            error_no_data: "資料清理後無資料",
+            error_fields: "請選擇 ID, X, Y 欄位",
+            success_load: (f, r, d) => `成功載入 ${f} 個欄位，共 ${r} 筆 (刪除 ${d} 筆)`,
+            loading_pyodide: "載入 Pyodide...",
+            loading_packages: "載入 Python 套件...",
+            installing_sklearn: "安裝 scikit-learn...",
+            init_functions: "初始化分析函數..."
+        },
+        "zh-CN": {
+            title: "ClusterViz",
+            upload_header: "文件选择区",
+            choose_file: "选择 CSV 文件 (UTF-8 或 Big5 编码)",
+            next_btn: "下一步",
+            params_header: "参数设置区",
+            choose_algo: "选择聚类算法",
+            opt_kmeans: "KMeans",
+            opt_dbscan: "DBSCAN",
+            opt_hierarchical: "Hierarchical",
+            opt_gmm: "Gaussian Mixture",
+            choose_id: "选择 ID 字段",
+            choose_x: "选择 X 字段 (数值, 必选)",
+            choose_y: "选择 Y 字段 (数值, 必选)",
+            choose_z: "选择 Z 字段 (数值, 可选)",
+            opt_none: "无 (2D 可视化)",
+            cluster_num: "聚类组数 (0 为默认)",
+            preprocess: "数据预处理方式",
+            opt_standardize: "标准化 (Standardize)",
+            show_centers: "显示聚类中心",
+            show_boundaries: "显示聚类边界",
+            start_btn: "开始计算",
+            result_header: "聚类结果可视化",
+            error_select_file: "请选择文件",
+            error_csv_file: "请选择 CSV 文件",
+            error_parse: "CSV 解析错误: ",
+            error_no_data: "清理后无可用数据",
+            error_fields: "请选择 ID, X, Y 字段",
+            success_load: (f, r, d) => `成功加载 ${f} 个字段，共 ${r} 条（删除 ${d} 条）`,
+            loading_pyodide: "正在加载 Pyodide...",
+            loading_packages: "正在加载 Python 包...",
+            installing_sklearn: "安装 scikit-learn...",
+            init_functions: "初始化分析函数..."
+        },
+        "en": {
+            title: "ClusterViz",
+            upload_header: "File Select",
+            choose_file: "Select CSV file (UTF-8 or Big5)",
+            next_btn: "Next",
+            params_header: "Parameter Settings",
+            choose_algo: "Select Clustering Algorithm",
+            opt_kmeans: "KMeans",
+            opt_dbscan: "DBSCAN",
+            opt_hierarchical: "Hierarchical",
+            opt_gmm: "Gaussian Mixture",
+            choose_id: "Select ID Field",
+            choose_x: "Select X Field (numeric, required)",
+            choose_y: "Select Y Field (numeric, required)",
+            choose_z: "Select Z Field (numeric, optional)",
+            opt_none: "None (2D Visualization)",
+            cluster_num: "Number of Clusters (0 = default)",
+            preprocess: "Data Preprocessing",
+            opt_standardize: "Standardize",
+            show_centers: "Show Cluster Centers",
+            show_boundaries: "Show Cluster Boundaries",
+            start_btn: "Start Clustering",
+            result_header: "Clustering Results Visualization",
+            error_select_file: "Please select a file",
+            error_csv_file: "Please select a CSV file",
+            error_parse: "CSV parse error: ",
+            error_no_data: "No data after cleaning",
+            error_fields: "Please select ID, X, Y fields",
+            success_load: (f, r, d) => `Successfully loaded ${f} fields and ${r} rows (${d} dropped)`,
+            loading_pyodide: "Loading Pyodide...",
+            loading_packages: "Loading Python packages...",
+            installing_sklearn: "Installing scikit-learn...",
+            init_functions: "Initializing analysis functions..."
+        }
+    };
+
+    const saved = localStorage.getItem('lang');
+    const browser = navigator.language || navigator.userLanguage;
+    let currentLang = saved ||
+        (browser.startsWith('zh-TW') ? 'zh-TW' :
+        browser.startsWith('zh-CN')  ? 'zh-CN' : 'en');
+
+    document.getElementById('langSelect').value = currentLang;
+
+    function translatePage() {
+        document.documentElement.lang = currentLang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            let txt = i18n[currentLang][key];
+            if (typeof txt === 'function') return;
+            if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
+                el.placeholder = txt;
+            } else {
+                el.textContent = txt;
+            }
+        });
+    }
+
+    document.getElementById('langSelect').addEventListener('change', e => {
+        currentLang = e.target.value;
+        localStorage.setItem('lang', currentLang);
+        translatePage();
+    });
+
+    translatePage();
+
     let pyodide=null, csvData=null, columns=[], numericColumns=[], clusterResult=null, idField=null, featureMatrix=null;
-    const fileInput=document.getElementById('fileInput'), nextButton=document.getElementById('nextButton'), uploadMessage=document.getElementById('uploadMessage');
-    const algorithmDropdown=document.getElementById('algorithmDropdown'), idDropdown=document.getElementById('idDropdown');
-    const x1Dropdown=document.getElementById('x1Dropdown'), x2Dropdown=document.getElementById('x2Dropdown'), x3Dropdown=document.getElementById('x3Dropdown');
-    const clusterNumInput=document.getElementById('clusterNumInput'), preprocessingDropdown=document.getElementById('preprocessingDropdown');
-    const calculateButton=document.getElementById('calculateButton');
-    const showCentersCheckbox=document.getElementById('showCentersCheckbox'), showBoundaryCheckbox=document.getElementById('showBoundaryCheckbox');
-    const boundaryCheckboxGroup=document.getElementById('boundaryCheckboxGroup');
-    const plotArea=document.getElementById('plotArea'), resultInfo=document.getElementById('resultInfo'), loadingOverlay=document.getElementById('loadingOverlay');
+    const fileInput=document.getElementById('fileInput'),
+          nextButton=document.getElementById('nextButton'),
+          uploadMessage=document.getElementById('uploadMessage'),
+          algorithmDropdown=document.getElementById('algorithmDropdown'),
+          idDropdown=document.getElementById('idDropdown'),
+          x1Dropdown=document.getElementById('x1Dropdown'),
+          x2Dropdown=document.getElementById('x2Dropdown'),
+          x3Dropdown=document.getElementById('x3Dropdown'),
+          clusterNumInput=document.getElementById('clusterNumInput'),
+          preprocessingDropdown=document.getElementById('preprocessingDropdown'),
+          calculateButton=document.getElementById('calculateButton'),
+          showCentersCheckbox=document.getElementById('showCentersCheckbox'),
+          showBoundaryCheckbox=document.getElementById('showBoundaryCheckbox'),
+          boundaryCheckboxGroup=document.getElementById('boundaryCheckboxGroup'),
+          plotArea=document.getElementById('plotArea'),
+          resultInfo=document.getElementById('resultInfo'),
+          loadingOverlay=document.getElementById('loadingOverlay');
 
-    nextButton.addEventListener('click',handleFileUpload);
-    calculateButton.addEventListener('click',performClustering);
-    showCentersCheckbox.addEventListener('change',renderPlot);
-    showBoundaryCheckbox.addEventListener('change',renderPlot);
-    algorithmDropdown.addEventListener('change',updateParamVisibility);
-    x3Dropdown.addEventListener('change',updateParamVisibility);
-    [idDropdown,x1Dropdown,x2Dropdown,x3Dropdown].forEach(sel=>sel.addEventListener('change',enforceUniqueSelection));
+    nextButton.addEventListener('click', handleFileUpload);
+    calculateButton.addEventListener('click', performClustering);
+    showCentersCheckbox.addEventListener('change', renderPlot);
+    showBoundaryCheckbox.addEventListener('change', renderPlot);
+    algorithmDropdown.addEventListener('change', updateParamVisibility);
+    x3Dropdown.addEventListener('change', updateParamVisibility);
+    [idDropdown,x1Dropdown,x2Dropdown,x3Dropdown].forEach(sel => sel.addEventListener('change', enforceUniqueSelection));
 
-    function showLoading(flag){loadingOverlay.style.visibility=flag?'visible':'hidden';}
-    function setProgress(pct,text){document.getElementById('progressBar').style.width=pct+'%';document.getElementById('progressText').textContent=text;}
+    function showLoading(flag) {
+        loadingOverlay.style.visibility = flag ? 'visible' : 'hidden';
+    }
+    function setProgress(pct, text) {
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('progressText').textContent = text;
+    }
 
-    async function initPyodide(){
-        showLoading(true);setProgress(0,'載入 Pyodide...');
-        pyodide=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.5/full/',onProgress:(l,t)=>setProgress(Math.round((l/t)*100),`載入 Pyodide ${Math.round((l/t)*100)}%`)});
-        setProgress(60,'載入 Python 套件...');await pyodide.loadPackage(['numpy','pandas','micropip']);
-        setProgress(85,'安裝 scikit-learn...');await pyodide.runPythonAsync(`import micropip\nawait micropip.install('scikit-learn')`);
-        setProgress(95,'初始化分析函數...');await pyodide.runPythonAsync(`
+    async function initPyodide() {
+        showLoading(true);
+        setProgress(0, i18n[currentLang].loading_pyodide);
+        pyodide = await loadPyodide({
+            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.5/full/',
+            onProgress: (l, t) => setProgress(Math.round((l/t)*100), `${i18n[currentLang].loading_pyodide} ${Math.round((l/t)*100)}%`)
+        });
+        setProgress(60, i18n[currentLang].loading_packages);
+        await pyodide.loadPackage(['numpy','pandas','micropip']);
+        setProgress(85, i18n[currentLang].installing_sklearn);
+        await pyodide.runPythonAsync(`import micropip\nawait micropip.install('scikit-learn')`);
+        setProgress(95, i18n[currentLang].init_functions);
+        await pyodide.runPythonAsync(`
 from sklearn.cluster import KMeans,DBSCAN,AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 from sklearn.decomposition import PCA
@@ -162,126 +360,210 @@ def cluster_analysis(data,features,algorithm,n_clusters,preprocessing):
     }
     initPyodide();
 
-    async function handleFileUpload(){
-        const file=fileInput.files[0];if(!file){showError('請選擇文件');return;}if(!file.name.toLowerCase().endsWith('.csv')){showError('請選擇 CSV 文件');return;}
+    async function handleFileUpload() {
+        const file = fileInput.files[0];
+        if (!file) { showError('error_select_file'); return; }
+        if (!file.name.toLowerCase().endsWith('.csv')) { showError('error_csv_file'); return; }
         showLoading(true);
-        const buf=await file.arrayBuffer();let text;
-        try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf);}catch{text=new TextDecoder('big5').decode(buf);}
-        Papa.parse(text,{header:true,dynamicTyping:false,skipEmptyLines:true,complete:results=>processCsv(results),error:err=>{showError(`CSV 解析錯誤: ${err}`);showLoading(false);}});
+        const buf = await file.arrayBuffer();
+        let text;
+        try {
+            text = new TextDecoder('utf-8', {fatal:true}).decode(buf);
+        } catch {
+            text = new TextDecoder('big5').decode(buf);
+        }
+        Papa.parse(text, {
+            header: true,
+            dynamicTyping: false,
+            skipEmptyLines: true,
+            complete: results => processCsv(results),
+            error: err => { showError('error_parse' + err); showLoading(false); }
+        });
     }
 
-    function processCsv(results){
-        try{
-            let data=results.data;const initial=data.length;
-            data.forEach(r=>{for(const k in r){let v=r[k];if(typeof v==='string'){const s=v.trim();if(s==='-')r[k]=0;else if(/^[0-9,]+(\.[0-9]+)?$/.test(s))r[k]=parseFloat(s.replace(/,/g,''));}}});
-            data=data.filter(r=>!Object.values(r).some(v=>v===null||v===undefined||v===''));const dropped=initial-data.length;
-            if(!data.length){showError('資料清理後無資料');showLoading(false);return;}
-            csvData=data;columns=results.meta.fields;numericColumns=columns.filter(c=>typeof data.find(r=>r[c]!=null)[c]==='number');
-            updateDropdowns();showSuccess(`成功載入 ${columns.length} 個欄位，共 ${data.length} 筆 (刪除 ${dropped} 筆)`);enableControls();
-        }catch(err){showError(err.message);}finally{showLoading(false);}    }
-
-    function updateDropdowns(){
-        [idDropdown,x1Dropdown,x2Dropdown].forEach(d=>d.innerHTML='');
-        x3Dropdown.innerHTML='<option value="none">無</option>';
-        columns.forEach(c=>idDropdown.append(new Option(c,c)));
-        numericColumns.forEach(c=>{x1Dropdown.append(new Option(c,c));x2Dropdown.append(new Option(c,c));x3Dropdown.append(new Option(c,c));});
+    function processCsv(results) {
+        try {
+            let data = results.data;
+            const initial = data.length;
+            data.forEach(r => {
+                for (const k in r) {
+                    let v = r[k];
+                    if (typeof v === 'string') {
+                        const s = v.trim();
+                        if (s === '-') r[k] = 0;
+                        else if (/^[0-9,]+(\.[0-9]+)?$/.test(s)) r[k] = parseFloat(s.replace(/,/g,''));
+                    }
+                }
+            });
+            data = data.filter(r => !Object.values(r).some(v => v===null||v===undefined||v===''));
+            const dropped = initial - data.length;
+            if (!data.length) { showError('error_no_data'); showLoading(false); return; }
+            csvData = data;
+            columns = results.meta.fields;
+            numericColumns = columns.filter(c => typeof data.find(r => r[c]!=null)[c] === 'number');
+            updateDropdowns();
+            showSuccessFields(columns.length, data.length, dropped);
+            enableControls();
+        } catch (err) {
+            showError(err.message);
+        } finally {
+            showLoading(false);
+        }
     }
 
-    function enableControls(){
-        [algorithmDropdown,idDropdown,x1Dropdown,x2Dropdown,x3Dropdown,clusterNumInput,preprocessingDropdown,calculateButton]
-            .forEach(el=>el.disabled=false);
+    function updateDropdowns() {
+        [idDropdown, x1Dropdown, x2Dropdown].forEach(d => d.innerHTML = '');
+        x3Dropdown.innerHTML = '<option value="none">' + i18n[currentLang].opt_none + '</option>';
+        columns.forEach(c => idDropdown.append(new Option(c, c)));
+        numericColumns.forEach(c => {
+            x1Dropdown.append(new Option(c, c));
+            x2Dropdown.append(new Option(c, c));
+            x3Dropdown.append(new Option(c, c));
+        });
+    }
+
+    function enableControls() {
+        [algorithmDropdown, idDropdown, x1Dropdown, x2Dropdown, x3Dropdown, clusterNumInput, preprocessingDropdown, calculateButton]
+            .forEach(el => el.disabled = false);
         updateParamVisibility();
     }
 
-    function enforceUniqueSelection(){
-        const sels=[idDropdown,x1Dropdown,x2Dropdown,x3Dropdown];
-        const vals=sels.map(s=>s.value).filter(v=>v&&v!=='none');
-        sels.forEach(s=>Array.from(s.options).forEach(o=>{o.disabled=false; if(o.value&&o.value!==s.value&&vals.includes(o.value))o.disabled=true;}));
+    function enforceUniqueSelection() {
+        const sels = [idDropdown, x1Dropdown, x2Dropdown, x3Dropdown];
+        const vals = sels.map(s => s.value).filter(v => v && v !== 'none');
+        sels.forEach(s => Array.from(s.options).forEach(o => {
+            o.disabled = false;
+            if (o.value && o.value !== s.value && vals.includes(o.value)) o.disabled = true;
+        }));
     }
 
-    function updateParamVisibility(){
-        const alg=algorithmDropdown.value;
-        document.getElementById('clusterNumGroup').style.display=alg==='dbscan'?'none':'';
-        showCentersCheckbox.parentElement.style.display=alg==='dbscan'?'none':'';
-        const is3D=x3Dropdown.value!=='none';
-        boundaryCheckboxGroup.style.display=is3D?'none':'';
+    function updateParamVisibility() {
+        const alg = algorithmDropdown.value;
+        document.getElementById('clusterNumGroup').style.display = alg === 'dbscan' ? 'none' : '';
+        showCentersCheckbox.parentElement.style.display = alg === 'dbscan' ? 'none' : '';
+        const is3D = x3Dropdown.value !== 'none';
+        boundaryCheckboxGroup.style.display = is3D ? 'none' : '';
     }
 
-    function convexHull(points){
-        points=points.slice().sort((a,b)=>a[0]===b[0]?a[1]-b[1]:a[0]-b[0]);
-        const cross=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
-        let lower=[],upper=[];
-        for(let p of points){while(lower.length>=2&&cross(lower[lower.length-2],lower[lower.length-1],p)<=0)lower.pop();lower.push(p);}        
-        for(let i=points.length-1;i>=0;i--){let p=points[i];while(upper.length>=2&&cross(upper[upper.length-2],upper[upper.length-1],p)<=0)upper.pop();upper.push(p);}        
-        lower.pop();upper.pop();return lower.concat(upper);
-    }
-
-    async function performClustering(){
-        idField=idDropdown.value;
-        const alg=algorithmDropdown.value;
-        const x1=x1Dropdown.value, x2=x2Dropdown.value, x3=x3Dropdown.value;
-        const n=parseInt(clusterNumInput.value), prep=preprocessingDropdown.value;
-        if(!idField||!x1||!x2){showError('請選擇 ID, X, Y 欄位');return;}
-        showLoading(true);
-        const features=[x1,x2]; if(x3!=='none') features.push(x3);
-        const code=`import json
-res=cluster_analysis(${JSON.stringify(csvData.map(r=>features.map(f=>r[f])))},${JSON.stringify(features)},'${alg}',${n},'${prep}')
-json.dumps(res)`;
-        const resJson=await pyodide.runPythonAsync(code);
-        clusterResult=JSON.parse(resJson);
-        featureMatrix=clusterResult.scaled_data;
-        renderPlot(); updateInfo(); showLoading(false);
-    }
-
-    function renderPlot(){
-        if(!clusterResult) return;
-        const labels=clusterResult.labels, centers=clusterResult.centers;
-        const is3D=x3Dropdown.value!=='none';
-        const unique=Array.from(new Set(labels)).sort((a,b)=>a-b);
-        const cs=['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
-        const colMap={}; unique.forEach((l,i)=>colMap[l]=cs[i%cs.length]);
-        const traces=[];
-        unique.forEach(lab=>{
-            const pts=labels.map((v,i)=>v===lab?featureMatrix[i]:null).filter(x=>x);
-            const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
-            const zs=is3D?pts.map(p=>p[2]):null;
-            const texts=labels.map((v,i)=>v===lab?csvData[i][idField]:null).filter(x=>x);
-            traces.push({type:is3D?'scatter3d':'scatter',mode:'markers',name:`群 ${lab}`,x:xs,y:ys, ...(is3D?{z:zs}:{}),text:texts,hovertemplate:is3D?'ID:%{text}<br>X1:%{x}<br>X2:%{y}<br>X3:%{z}<extra></extra>':'ID:%{text}<br>X1:%{x}<br>X2:%{y}<extra></extra>',marker:{size:6,color:colMap[lab]}});
-        });
-        if(showCentersCheckbox.checked) centers.forEach((c,i)=>{
-            const lab=unique[i];
-            traces.push({type:is3D?'scatter3d':'scatter',mode:'markers',name:`中心 ${lab}`,x:[c[0]],y:[c[1]],...(is3D?{z:[c[2]||0]}:{}),marker:{symbol:'cross',size:12,color:colMap[lab]}});
-        });
-        if(showBoundaryCheckbox.checked && !is3D) unique.forEach(lab=>{
-            const pts=labels.map((v,i)=>v===lab?featureMatrix[i]:null).filter(x=>x);
-            if(pts.length>=3){
-                let hull=convexHull(pts.map(p=>[p[0],p[1]])); hull.push(hull[0]);
-                traces.push({x:hull.map(p=>p[0]),y:hull.map(p=>p[1]),mode:'lines',name:`邊界 ${lab}`,line:{dash:'dash',width:2,color:colMap[lab]}});
-            }
-        });
-        // 3D 限制最大解析度
-        let layout={margin:{t:0},autosize:!is3D};
-        if(is3D){
-            const maxW=Math.min(plotArea.clientWidth,800);
-            const maxH=Math.min(window.innerHeight*0.7,600);
-            layout.width=maxW; layout.height=maxH;
+    function convexHull(points) {
+        points = points.slice().sort((a,b) => a[0]===b[0] ? a[1]-b[1] : a[0]-b[0]);
+        const cross = (o,a,b) => (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]);
+        let lower = [], upper = [];
+        for (let p of points) {
+            while (lower.length >= 2 && cross(lower[lower.length-2], lower[lower.length-1], p) <= 0) lower.pop();
+            lower.push(p);
         }
-        Plotly.newPlot(plotArea,traces,layout,{responsive:true});
+        for (let i = points.length-1; i >= 0; i--) {
+            let p = points[i];
+            while (upper.length >= 2 && cross(upper[upper.length-2], upper[upper.length-1], p) <= 0) upper.pop();
+            upper.push(p);
+        }
+        lower.pop(); upper.pop();
+        return lower.concat(upper);
     }
 
-    function updateInfo(){
-        const info=clusterResult;
-        const total=Object.values(info.stats).reduce((a,b)=>a+b,0);
-        let statsHtml='';
-        Object.entries(info.stats).sort((a,b)=>a[0]-b[0]).forEach(([lab,count])=>{
-            const pct=(count/total*100).toFixed(2);
-            statsHtml += `群 ${lab}: ${count} (${pct}%)<br>`;
+    async function performClustering() {
+        idField = idDropdown.value;
+        const alg = algorithmDropdown.value;
+        const x1 = x1Dropdown.value, x2 = x2Dropdown.value, x3 = x3Dropdown.value;
+        const n = parseInt(clusterNumInput.value), prep = preprocessingDropdown.value;
+        if (!idField || !x1 || !x2) { showError('error_fields'); return; }
+        showLoading(true);
+        const features = [x1, x2];
+        if (x3 !== 'none') features.push(x3);
+        const code = `import json
+res = cluster_analysis(${JSON.stringify(csvData.map(r => features.map(f => r[f])))},
+                       ${JSON.stringify(features)},
+                       '${alg}', ${n}, '${prep}')
+json.dumps(res)`;
+        const resJson = await pyodide.runPythonAsync(code);
+        clusterResult = JSON.parse(resJson);
+        featureMatrix = clusterResult.scaled_data;
+        renderPlot();
+        updateInfo();
+        showLoading(false);
+    }
+
+    function renderPlot() {
+        if (!clusterResult) return;
+        const labels = clusterResult.labels, centers = clusterResult.centers;
+        const is3D = x3Dropdown.value !== 'none';
+        const unique = Array.from(new Set(labels)).sort((a,b) => a-b);
+        const colors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
+        const colMap = {};
+        unique.forEach((l,i) => colMap[l] = colors[i % colors.length]);
+        const traces = [];
+        unique.forEach(lab => {
+            const pts = labels.map((v,i) => v===lab ? featureMatrix[i] : null).filter(x => x);
+            const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), zs = is3D ? pts.map(p => p[2]) : null;
+            const texts = labels.map((v,i) => v===lab ? csvData[i][idField] : null).filter(x => x);
+            traces.push({
+                type: is3D ? 'scatter3d' : 'scatter',
+                mode: 'markers',
+                name: `${currentLang==='en'?'Cluster':'群'} ${lab}`,
+                x: xs, y: ys, ...(is3D ? {z: zs} : {}),
+                text: texts,
+                hovertemplate: is3D
+                    ? 'ID:%{text}<br>X1:%{x}<br>X2:%{y}<br>X3:%{z}<extra></extra>'
+                    : 'ID:%{text}<br>X1:%{x}<br>X2:%{y}<extra></extra>',
+                marker: { size: 6, color: colMap[lab] }
+            });
         });
-        resultInfo.innerHTML=`解釋方差：${(info.explained_variance*100).toFixed(2)}%<br>${statsHtml}`;
+        if (showCentersCheckbox.checked) {
+            centers.forEach((c,i) => {
+                traces.push({
+                    type: is3D ? 'scatter3d' : 'scatter',
+                    mode: 'markers',
+                    name: `${currentLang==='en'?'Center':'中心'} ${unique[i]}`,
+                    x: [c[0]], y: [c[1]], ...(is3D ? { z: [c[2] || 0] } : {}),
+                    marker: { symbol: 'cross', size: 12, color: colMap[unique[i]] }
+                });
+            });
+        }
+        if (showBoundaryCheckbox.checked && !is3D) {
+            unique.forEach(lab => {
+                const pts = labels.map((v,i) => v===lab ? featureMatrix[i] : null).filter(x => x);
+                if (pts.length >= 3) {
+                    let hull = convexHull(pts.map(p => [p[0], p[1]]));
+                    hull.push(hull[0]);
+                    traces.push({
+                        x: hull.map(p => p[0]),
+                        y: hull.map(p => p[1]),
+                        mode: 'lines',
+                        name: `${currentLang==='en'?'Boundary':'邊界'} ${lab}`,
+                        line: { dash: 'dash', width: 2, color: colMap[lab] }
+                    });
+                }
+            });
+        }
+        let layout = { margin: { t: 0 }, autosize: !is3D };
+        if (is3D) {
+            const maxW = Math.min(plotArea.clientWidth, 800);
+            const maxH = Math.min(window.innerHeight * 0.7, 600);
+            layout.width = maxW; layout.height = maxH;
+        }
+        Plotly.newPlot(plotArea, traces, layout, { responsive: true });
     }
 
-    function showError(msg){ uploadMessage.innerHTML=`<div class="error-message">${msg}</div>`; }
-    function showSuccess(msg){ uploadMessage.innerHTML=`<div class="success-message">${msg}</div>`; }
+    function updateInfo() {
+        const info = clusterResult;
+        const total = Object.values(info.stats).reduce((a,b) => a+b, 0);
+        let html = `${currentLang==='en'?'Explained Var':'解釋方差'}：${(info.explained_variance*100).toFixed(2)}%<br>`;
+        Object.entries(info.stats).sort((a,b) => a[0]-b[0]).forEach(([lab,count]) => {
+            const pct = (count/total*100).toFixed(2);
+            html += `${currentLang==='en'?'Cluster':'群'} ${lab}: ${count} (${pct}%)<br>`;
+        });
+        resultInfo.innerHTML = html;
+    }
+
+    function showError(key) {
+        const msg = i18n[currentLang][key] || key;
+        uploadMessage.innerHTML = `<div class="error-message">${msg}</div>`;
+    }
+    function showSuccessFields(f, r, d) {
+        const msg = i18n[currentLang].success_load(f, r, d);
+        uploadMessage.innerHTML = `<div class="success-message">${msg}</div>`;
+    }
     </script>
 </body>
 </html>
