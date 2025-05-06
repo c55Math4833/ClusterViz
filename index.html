@@ -94,7 +94,7 @@
                 <div class="form-group">
                     <label for="preprocessingDropdown" data-i18n="preprocess">數據預處理方式</label>
                     <select id="preprocessingDropdown" disabled>
-                        <option value="none" data-i18n="opt_none">不經處理 (None)</option>
+                        <option value="none" data-i18n="stand_none">不經處理 (None)</option>
                         <option value="standardize" data-i18n="opt_standardize">標準化 (Standardize)</option>
                     </select>
                 </div>
@@ -145,7 +145,8 @@
             choose_x: "選擇 X 欄位 (數值, 必選)",
             choose_y: "選擇 Y 欄位 (數值, 必選)",
             choose_z: "選擇 Z 欄位 (數值, 可選)",
-            opt_none: "無 (2D 可視化)",
+            opt_none: "無",
+            stand_none: "不經處理 (None)",
             cluster_num: "聚類組數 (0 為預設)",
             preprocess: "數據預處理方式",
             opt_standardize: "標準化 (Standardize)",
@@ -180,6 +181,7 @@
             choose_y: "选择 Y 字段 (数值, 必选)",
             choose_z: "选择 Z 字段 (数值, 可选)",
             opt_none: "无 (2D 可视化)",
+            stand_none: "不经过处理 (None)",
             cluster_num: "聚类组数 (0 为默认)",
             preprocess: "数据预处理方式",
             opt_standardize: "标准化 (Standardize)",
@@ -214,6 +216,7 @@
             choose_y: "Select Y Field (numeric, required)",
             choose_z: "Select Z Field (numeric, optional)",
             opt_none: "None (2D Visualization)",
+            stand_none: "No preprocessing (None)",
             cluster_num: "Number of Clusters (0 = default)",
             preprocess: "Data Preprocessing",
             opt_standardize: "Standardize",
@@ -413,7 +416,7 @@ def cluster_analysis(data,features,algorithm,n_clusters,preprocessing):
 
     function updateDropdowns() {
         [idDropdown, x1Dropdown, x2Dropdown].forEach(d => d.innerHTML = '');
-        x3Dropdown.innerHTML = '<option value="none">' + i18n[currentLang].opt_none + '</option>';
+        x3Dropdown.innerHTML = '<option value="none">' + i18n[currentLang].stand_none + '</option>';
         columns.forEach(c => idDropdown.append(new Option(c, c)));
         numericColumns.forEach(c => {
             x1Dropdown.append(new Option(c, c));
